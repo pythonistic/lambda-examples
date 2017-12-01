@@ -1,0 +1,73 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>URL Shortener</title>
+</head>
+<body>
+    <h2>Shorten any URL</h2>
+    <form>
+        <label for="source_url">URL:</label>
+        <input type="text" maxlength="64" size="48" id="source_url" name="source_url"/>
+        <br/>
+        <input type="button" id="submit" name="submit" value="Shorten!" onclick="shorten();"/>
+    </form>
+    <p/>
+    <div id="shortened">
+        Shortened URL:
+        <span id="shortened_url"></span>
+    </div>
+    <div id="results" style="visibility: hidden;">
+
+    </div>
+    <div id="error" style="visibility: hidden; background-color: red; color: white; font-weight: bold; padding: 15px 15px 15px 15px;">
+
+    </div>
+
+    <!-- import library dependencies -->
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/axios/dist/axios.standalone.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/CryptoJS/rollups/hmac-sha256.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/CryptoJS/rollups/sha256.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/CryptoJS/components/hmac.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/CryptoJS/components/enc-base64.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/url-template/url-template.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/apiGatewayCore/sigV4Client.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/apiGatewayCore/apiGatewayClient.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/apiGatewayCore/simpleHttpClient.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/lib/apiGatewayCore/utils.js"></script>
+    <script type="text/javascript" src="apiGateway-js-sdk/apigClient.js"></script>
+
+    <script type="text/javascript">
+        // Initialize the unauthenticated client
+        var apigClient = apigClientFactory.newClient({
+            region: 'us-west-2'
+        });
+
+        function shorten() {
+            // get the URL supplied by the user
+            var source_url = document.getElementById("source_url").value;
+
+            // prepare the call
+            var params = {};
+            var body = {
+                "url": source_url
+            };
+            var additionalParams = {};
+
+            var pr = apigClient.shortenPost(params, body, additionalParams);
+            console.log(pr);
+
+                pr.then(function(result){
+                    var uri = result["data"]["redirect"];
+
+                    document.getElementById("results").innerHTML = "<a href=\"" + uri + "\" target=\"_blank\">" + uri + "</a>";
+                    document.getElementById("results").style.visibility = "visible";
+                    document.getElementById("error").style.visibility = "hidden";
+                }).catch( function(error){
+                    document.getElementById("error").innerHTML = "Error:<br/><pre>" + JSON.stringify(error) + "</pre>";
+                    document.getElementById("results").style.visibility = "hidden";
+                    document.getElementById("error").style.visibility = "visible";
+                });
+        }
+    </script>
+</body>
+</html>
