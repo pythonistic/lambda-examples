@@ -18,6 +18,13 @@ exports.shorten = (event, context, callback) => {
         }
     };
 
+    var redirect = h;
+    if (event && event["headers"] &&
+        event["headers"]["Host"] && event["requestContext"] &&
+        event["requestContext"]["stage"]) {
+        redirect = "https://" + event["headers"]["Host"] + "/" + event["requestContext"]["stage"] + "/" + redirect;
+    }
+
     client.put(params, function(err, data) {
         if (err) {
             console.log("err: " + err);
@@ -27,6 +34,7 @@ exports.shorten = (event, context, callback) => {
         } else {
             callback(null, response(200, {
                 hash: h,
+                redirect: redirect,
                 url: url
             }));
         }
