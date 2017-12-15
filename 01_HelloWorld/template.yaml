@@ -2,16 +2,13 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: A hello world application
 Parameters:
-  Bucket:
-    Type: String
-  CodeZipKey:
-    Type: String
+  Environment:
+    Variables:
+      TABLE_NAME: ShortenedUris
 Resources:
-  HelloWorldFunction:
+  Lookup:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: index.handler
+      Handler: shortener.lookup
       Runtime: nodejs6.10
-      CodeUri:
-        Bucket: !Ref Bucket
-        Key: !Ref CodeZipKey
+      CodeUri: s3://joneschr-brnr-1214-a-lambdas/shortener.zip

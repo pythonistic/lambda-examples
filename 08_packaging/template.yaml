@@ -1,0 +1,32 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: A URL shortner
+Properties:
+  # DynamoDB!
+  # Environment variables!
+Resources:
+  ShortenerApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: "ShortenerApi"
+      BodyS3Location:
+        Bucket: s3://joneschr-brner-1214-a-lambdas/Shortener-prod-swagger-apigateway.json
+
+  Lookup:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.lookup
+      Runtime: nodejs6.10
+      CodeUri: s3://joneschr-brnr-1214-a-lambdas/shortener.zip
+  Redirect:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.redirect
+      Runtime: nodejs6.10
+      CodeUri: s3://joneschr-brnr-1214-a-lambdas/shortener.zip
+  Shorten:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.shorten
+      Runtime: nodejs6.10
+      CodeUri: s3://joneschr-brnr-1214-a-lambdas/shortener.zip
