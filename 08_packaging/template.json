@@ -1,0 +1,118 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Transform": "AWS::Serverless-2016-10-31",
+  "Description": "A URL shortener",
+  "Resources": {
+    "SinglePageAppBucket": {
+      "Type": "AWS::S3::Bucket"
+    },
+    "SinglePageAppBucketPolicy": {
+      "Type": "AWS::S3::BucketPolicy",
+      "DependsOn": "SinglePageAppBucket",
+      "Properties": {
+        "Bucket": {"Ref": "SinglePageAppBucket"},
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": "s3:GetObject",
+              "Principal": {
+                "AWS": "*"
+              },
+              "Resource": { "Fn::Join": ["", [
+                "arn:aws:s3:::", {"Ref": "SinglePageAppBucket"}, "/*"
+              ] ] },
+              "Condition": {
+                "IpAddress": {
+                  "aws:SourceIp": [
+                    "127.0.0.1/1"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "ShortenerTable": {
+      "Type": "AWS::DynamoDB::Table",
+      "Properties": {
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "shortened",
+            "AttributeType": "S"
+          }
+        ],
+        "KeySchema": [
+          {
+            "AttributeName": "shortened",
+            "KeyType": "HASH"
+          }
+        ],
+        "ProvisionedThroughput": {
+          "ReadCapacityUnits": 5,
+          "WriteCapacityUnits": 5
+        },
+        "TableName": "ShortenedUris"
+      }
+    },
+    "Lookup": {
+      "Type": "AWS::Serverless::Function",
+      "DependsOn": "ShortenerTable",
+      "Properties": {
+        "Handler": "index.lookup",
+        "Runtime": "nodejs6.10",
+        "CodeUri": "s3://your-bucket-lambdas/shortener.zip",
+        "Environment": {
+          "Variables": {
+            "TABLE_NAME": "ShortenedUris"
+          }
+        }
+      }
+    },
+    "Redirect": {
+      "Type": "AWS::Serverless::Function",
+      "DependsOn": "Lookup",
+      "Properties": {
+        "Handler": "index.redirect",
+        "Runtime": "nodejs6.10",
+        "CodeUri": "s3://your-bucket-lambdas/shortener.zip",
+        "Environment": {
+          "Variables": {
+            "LOOKUP_FUNCTION": {"Ref": "Lookup"}
+          }
+        }
+      }
+    },
+    "Shorten": {
+      "Type": "AWS::Serverless::Function",
+      "DependsOn": "ShortenerTable",
+      "Properties": {
+        "Handler": "index.shorten",
+        "Runtime": "nodejs6.10",
+        "CodeUri": "s3://your-bucket-lambdas/shortener.zip",
+        "Environment": {
+          "Variables": {
+            "TABLE_NAME": "ShortenedUris"
+          }
+        }
+      }
+    },
+    "ShortenerApi": {
+      "Type": "AWS::ApiGateway::RestApi",
+      "DependsOn": ["SinglePageAppBucket", "Lookup", "Redirect", "Shorten"],
+      "Properties": {
+        "Name": "ShortenerApi",
+        "Body": {
+          "Fn::Transform": {
+            "Name": "AWS::Include",
+            "Parameters": {
+              "Location": "s3://your-bucket-lambdas/Shortener-prod-swagger-apigateway.json"
+            }
+          }
+        }
+      }
+    }
+  }
+}

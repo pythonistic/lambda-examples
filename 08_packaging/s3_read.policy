@@ -1,0 +1,32 @@
+{
+  "Id": "Policy###########",
+  "Statement": [
+    {
+      "Sid": "Stmt##########",
+      "Action": [
+        "s3:ListBucket"
+      ],
+      "Effect": "Allow",
+      "Resource": "arn:aws:s3:::lambda-bucket-name",
+      "Principal": {
+        "AWS": [
+          "####-####-####"
+        ]
+      }
+    },
+    {
+      "Sid": "Stmt##########",
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject"
+      ],
+      "Effect": "Allow",
+      "Resource": "arn:aws:s3:::lambda-bucket-name/*",
+      "Principal": {
+        "AWS": [
+          "####-####-####"
+        ]
+      }
+    }
+  ]
+}

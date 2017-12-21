@@ -41,7 +41,7 @@ exports.redirect = (event, context, callback) => {
         };
 
         var params = {
-            FunctionName: "arn:aws:lambda:us-west-2:############:function:lookup",
+            FunctionName: process.env.LOOKUP_FUNCTION,
             InvocationType: "RequestResponse",
             LogType: "Tail",
             Payload: new Buffer(JSON.stringify(payload))
