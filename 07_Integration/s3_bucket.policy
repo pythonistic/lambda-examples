@@ -9,17 +9,11 @@
             "Principal": {
                 "AWS": "*"
             },
-            "Resource": "arn:aws:s3:::aws-account/shortener/*",
+            "Resource": "arn:aws:s3:::bucket-name/shortener/*",
             "Condition": {
                 "IpAddress": {
                     "aws:SourceIp": [
-                        "54.239.2.128/27",
-                        "54.240.230.128/25",
-                        "205.251.233.32/28",
-                        "205.251.233.48/29",
-                        "205.251.233.160/28",
-                        "205.251.233.176/29",
-                        "205.251.234.32/28"
+                        "127.0.0.1/24"
                     ]
                 }
             }

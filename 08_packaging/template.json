@@ -10,7 +10,9 @@
       "Type": "AWS::S3::BucketPolicy",
       "DependsOn": "SinglePageAppBucket",
       "Properties": {
-        "Bucket": {"Ref": "SinglePageAppBucket"},
+        "Bucket": {
+          "Ref": "SinglePageAppBucket"
+        },
         "PolicyDocument": {
           "Version": "2012-10-17",
           "Statement": [
@@ -20,9 +22,18 @@
               "Principal": {
                 "AWS": "*"
               },
-              "Resource": { "Fn::Join": ["", [
-                "arn:aws:s3:::", {"Ref": "SinglePageAppBucket"}, "/*"
-              ] ] },
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:s3:::",
+                    {
+                      "Ref": "SinglePageAppBucket"
+                    },
+                    "/*"
+                  ]
+                ]
+              },
               "Condition": {
                 "IpAddress": {
                   "aws:SourceIp": [
@@ -80,7 +91,9 @@
         "CodeUri": "s3://your-bucket-lambdas/shortener.zip",
         "Environment": {
           "Variables": {
-            "LOOKUP_FUNCTION": {"Ref": "Lookup"}
+            "LOOKUP_FUNCTION": {
+              "Ref": "Lookup"
+            }
           }
         }
       }
@@ -101,7 +114,12 @@
     },
     "ShortenerApi": {
       "Type": "AWS::ApiGateway::RestApi",
-      "DependsOn": ["SinglePageAppBucket", "Lookup", "Redirect", "Shorten"],
+      "DependsOn": [
+        "SinglePageAppBucket",
+        "Lookup",
+        "Redirect",
+        "Shorten"
+      ],
       "Properties": {
         "Name": "ShortenerApi",
         "Body": {
@@ -112,6 +130,44 @@
             }
           }
         }
+      }
+    },
+    "ShortenerDeployment": {
+      "Type": "AWS::ApiGateway::Deployment",
+      "DependsOn": "ShortenerApi",
+      "Properties": {
+        "Description": "URI Shortener Prod Deployment",
+        "RestApiId": {
+          "Ref": "ShortenerApi"
+        },
+      }
+    },
+    "ShortenerProd": {
+      "Type": "AWS::ApiGateway::Stage",
+      "DependsOn": "ShortenerDeployment",
+      "Properties": {
+        "DeploymentId": {
+          "Ref": "ShortenerDeployment"
+        },
+        "Description": "URI Shortener Prod Stage",
+        "RestApiId": {
+          "Ref": "ShortenerApi"
+        },
+        "StageName": "prod",
+        "MethodSettings": [
+          {
+            "ResourcePath": "/lookup/{shortened}",
+            "HttpMethod": "GET"
+          },
+          {
+            "ResourcePath": "/shorten",
+            "HttpMethod": "POST"
+          },
+          {
+            "ResourcePath": "/{redirect}",
+            "HttpMethod": "GET"
+          }
+        ]
       }
     }
   }
